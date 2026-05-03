@@ -1,4 +1,40 @@
-/* Frontend CSS */
-.woodivi-extend {
-  /* Add your frontend styles here */
+.woodivi-portfolio-subfilters {
+	margin: 14px 0 24px;
+}
+
+.woodivi-portfolio-subfilters__fieldset {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 16px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.woodivi-portfolio-subfilters__legend {
+	width: 100%;
+	margin: 0 0 4px;
+	color: #666;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.woodivi-portfolio-subfilters__option {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	margin: 0;
+	color: #444;
+	font-size: 14px;
+	line-height: 1.4;
+	cursor: pointer;
+}
+
+.woodivi-portfolio-subfilters__option input {
+	margin: 0;
+}
+
+.et_pb_filterable_portfolio .et_pb_portfolio_item.woodivi-subcategory-hidden {
+	display: none !important;
 }

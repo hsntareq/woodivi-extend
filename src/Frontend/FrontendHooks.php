@@ -38,20 +38,45 @@ class FrontendHooks {
 	 * @return void
 	 */
 	public function register() {
-		// Frontend enqueue scripts and styles
+		// Frontend enqueue scripts and styles.
 		$this->loader->add_action(
 			'wp_enqueue_scripts',
 			$this,
 			'enqueue_frontend_assets'
 		);
 
-		// Example filter hook
-		$this->loader->add_filter(
-			'the_content',
+		if ( ! is_admin() ) {
+			$this->loader->add_filter(
+				'the_content',
+				$this,
+				'modify_content',
+				20,
+				1
+			);
+		}
+
+		// Divi 5 Visual Builder module setting.
+		$this->loader->add_action(
+			'divi_visual_builder_assets_before_enqueue_scripts',
 			$this,
-			'modify_content',
-			20,
-			1
+			'enqueue_divi_visual_builder_assets'
+		);
+
+		// Divi 5 frontend render attributes.
+		$this->loader->add_filter(
+			'divi_module_library_register_module_attrs',
+			$this,
+			'add_filterable_portfolio_render_attrs',
+			10,
+			2
+		);
+
+		$this->loader->add_filter(
+			'divi_module_library_module_default_attributes_divi/filterable-portfolio',
+			$this,
+			'add_filterable_portfolio_default_attrs',
+			10,
+			2
 		);
 	}
 
@@ -61,6 +86,8 @@ class FrontendHooks {
 	 * @return void
 	 */
 	public function enqueue_frontend_assets() {
+		$filterable_portfolio_settings = $this->get_filterable_portfolio_settings();
+
 		wp_enqueue_style(
 			'woodivi-extend-frontend',
 			WOO_DIVI_EXTENDED_URL . 'assets/css/frontend.css',
@@ -81,10 +108,172 @@ class FrontendHooks {
 			'woodivi-extend-frontend',
 			'wooDiviExtended',
 			array(
-				'ajaxurl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'woodivi-extend-nonce' ),
+				'ajaxurl'             => admin_url( 'admin-ajax.php' ),
+				'nonce'               => wp_create_nonce( 'woodivi-extend-nonce' ),
+				'filterablePortfolio' => array(
+					'enabled'       => (bool) $filterable_portfolio_settings['enabled'],
+					'showCounts'    => (bool) $filterable_portfolio_settings['show_counts'],
+					'showLabel'     => (bool) $filterable_portfolio_settings['show_label'],
+					'checkboxLabel' => $filterable_portfolio_settings['checkbox_label'],
+					'categories'    => $this->get_project_category_tree(),
+				),
 			)
 		);
+	}
+
+	/**
+	 * Enqueue Divi 5 Visual Builder assets.
+	 *
+	 * @return void
+	 */
+	public function enqueue_divi_visual_builder_assets() {
+		if (
+			! function_exists( 'et_builder_d5_enabled' )
+			|| ! function_exists( 'et_core_is_fb_enabled' )
+			|| ! et_builder_d5_enabled()
+			|| ! et_core_is_fb_enabled()
+			|| ! class_exists( '\ET\Builder\VisualBuilder\Assets\PackageBuildManager' )
+		) {
+			return;
+		}
+
+		\ET\Builder\VisualBuilder\Assets\PackageBuildManager::register_package_build(
+			array(
+				'name'    => 'woodivi-extend-divi5-filterable-portfolio',
+				'version' => WOO_DIVI_EXTENDED_VERSION,
+				'script'  => array(
+					'src'                => WOO_DIVI_EXTENDED_URL . 'assets/js/divi5-filterable-portfolio.js',
+					'deps'               => array(
+						'lodash',
+						'divi-vendor-wp-hooks',
+						'divi-vendor-wp-i18n',
+					),
+					'enqueue_top_window' => true,
+					'enqueue_app_window' => true,
+					'args'               => array(
+						'in_footer' => false,
+					),
+				),
+				'style'   => array(
+					'enqueue_top_window' => false,
+					'enqueue_app_window' => false,
+				),
+			)
+		);
+	}
+
+	/**
+	 * Add default Divi 5 render attributes for the custom module setting.
+	 *
+	 * @param array $default_attrs Default attributes.
+	 * @param array $metadata      Module metadata.
+	 *
+	 * @return array
+	 */
+	public function add_filterable_portfolio_default_attrs( $default_attrs, $metadata ) {
+		$default_attrs['portfolio']['advanced']['showSubcategories'] = array(
+			'desktop' => array(
+				'value' => 'off',
+			),
+		);
+
+		return $default_attrs;
+	}
+
+	/**
+	 * Add frontend classes/data attributes when the module-level setting is enabled.
+	 *
+	 * @param array $module_attrs Module render attributes.
+	 * @param array $filter_args  Filter context.
+	 *
+	 * @return array
+	 */
+	public function add_filterable_portfolio_render_attrs( $module_attrs, $filter_args ) {
+		$module_name = isset( $filter_args['name'] ) ? $filter_args['name'] : '';
+
+		if ( 'divi/filterable-portfolio' !== $module_name ) {
+			return $module_attrs;
+		}
+
+		$show_subcategories = $module_attrs['portfolio']['advanced']['showSubcategories']['desktop']['value'] ?? 'off';
+
+		if ( 'on' !== $show_subcategories ) {
+			return $module_attrs;
+		}
+
+		$existing_class = $module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['class'] ?? '';
+		$classes        = array_filter( preg_split( '/\s+/', $existing_class ) );
+		$classes[]      = 'woodivi-filterable-portfolio-subcategories';
+
+		$module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['class'] = implode( ' ', array_unique( $classes ) );
+
+		return $module_attrs;
+	}
+
+	/**
+	 * Get filterable portfolio settings.
+	 *
+	 * @return array
+	 */
+	private function get_filterable_portfolio_settings() {
+		$defaults = array(
+			'enabled'        => 0,
+			'show_counts'    => 1,
+			'show_label'     => 1,
+			'checkbox_label' => __( 'Refine by sub category', 'woodivi-extend' ),
+		);
+
+		return wp_parse_args( get_option( 'woodivi_extend_filterable_portfolio', array() ), $defaults );
+	}
+
+	/**
+	 * Get project category hierarchy for Divi portfolio filters.
+	 *
+	 * @return array
+	 */
+	private function get_project_category_tree() {
+		if ( ! taxonomy_exists( 'project_category' ) ) {
+			return array();
+		}
+
+		$terms = get_terms(
+			array(
+				'taxonomy'   => 'project_category',
+				'hide_empty' => false,
+			)
+		);
+
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return array();
+		}
+
+		$parents = array();
+
+		foreach ( $terms as $term ) {
+			if ( 0 === (int) $term->parent ) {
+				$parents[ $term->term_id ] = array(
+					'id'       => (int) $term->term_id,
+					'name'     => $term->name,
+					'slug'     => $term->slug,
+					'children' => array(),
+				);
+			}
+		}
+
+		foreach ( $terms as $term ) {
+			if ( 0 === (int) $term->parent || ! isset( $parents[ $term->parent ] ) ) {
+				continue;
+			}
+
+			$parents[ $term->parent ]['children'][] = array(
+				'id'    => (int) $term->term_id,
+				'name'  => $term->name,
+				'slug'  => $term->slug,
+				'count' => (int) $term->count,
+			);
+		}
+
+		return array_values( $parents );
 	}
 
 	/**

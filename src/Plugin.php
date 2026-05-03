@@ -86,11 +86,9 @@ class Plugin {
 			$admin->register();
 		}
 
-		// Frontend hooks
-		if ( ! is_admin() ) {
-			$frontend = new Frontend\FrontendHooks( $this->loader );
-			$frontend->register();
-		}
+		// Frontend and Divi Builder hooks
+		$frontend = new Frontend\FrontendHooks( $this->loader );
+		$frontend->register();
 
 		// Execute all registered hooks
 		$this->loader->run();
