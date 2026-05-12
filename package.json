@@ -1,0 +1,26 @@
+{
+  "name": "woodivi-extend",
+  "version": "1.0.0",
+  "description": "A professional WordPress plugin structure following OOP principles and PSR-4 autoloading standards.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "wp-scripts build",
+    "start": "wp-scripts start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsntareq/woo-divi-extended.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hsntareq/woo-divi-extended/issues"
+  },
+  "homepage": "https://github.com/hsntareq/woo-divi-extended#readme",
+  "devDependencies": {
+    "@wordpress/scripts": "^32.1.0"
+  }
+}

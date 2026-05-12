@@ -24,6 +24,13 @@ class FrontendHooks {
 	private $loader;
 
 	/**
+	 * Track hooks that attempted Apex27 Divi 5 registration.
+	 *
+	 * @var array
+	 */
+	private $apex27_registration_hooks = array();
+
+	/**
 	 * Constructor
 	 *
 	 * @param Loader $loader The loader instance.
@@ -55,9 +62,46 @@ class FrontendHooks {
 			);
 		}
 
-		// Divi 5 Visual Builder module setting.
+		$this->loader->add_action(
+			'init',
+			$this,
+			'register_apex27_divi5_modules',
+			20
+		);
+
+		$this->loader->add_action(
+			'et_builder_ready',
+			$this,
+			'register_apex27_divi5_modules'
+		);
+
+		$this->loader->add_action(
+			'admin_init',
+			$this,
+			'register_apex27_divi5_modules'
+		);
+
+		// Specific hook for Divi 5 Module Library registration.
+		$this->loader->add_action(
+			'divi_module_library_register_modules',
+			$this,
+			'register_apex27_divi5_modules'
+		);
+
+		$this->loader->add_action(
+			'et_builder_ready',
+			$this,
+			'register_apex27_legacy_divi_modules'
+		);
+
 		$this->loader->add_action(
 			'divi_visual_builder_assets_before_enqueue_scripts',
+			$this,
+			'enqueue_divi_visual_builder_assets'
+		);
+
+		$this->loader->add_action(
+			'wp_enqueue_scripts',
 			$this,
 			'enqueue_divi_visual_builder_assets'
 		);
@@ -78,6 +122,49 @@ class FrontendHooks {
 			10,
 			2
 		);
+
+		$this->loader->add_action(
+			'admin_notices',
+			$this,
+			'maybe_render_apex27_registration_debug_notice'
+		);
+	}
+
+	/**
+	 * Register native Apex27 Divi 5 modules.
+	 *
+	 * @return void
+	 */
+	public function register_apex27_divi5_modules() {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Apex27: register_apex27_divi5_modules called on hook: ' . current_filter() );
+		}
+		$this->apex27_registration_hooks[] = current_filter();
+
+		\WooDiviExtended\Divi5\Apex27ListingsModule::load();
+		\WooDiviExtended\Divi5\Apex27SearchFormModule::load();
+		\WooDiviExtended\Divi5\DemoModule::load();
+	}
+
+	/**
+	 * Register legacy Apex27 Divi Builder modules for Divi 4 mode.
+	 *
+	 * @return void
+	 */
+	public function register_apex27_legacy_divi_modules() {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Apex27: register_apex27_legacy_divi_modules called on hook: ' . current_filter() );
+		}
+		if ( function_exists( 'et_builder_d5_enabled' ) && et_builder_d5_enabled() ) {
+			return;
+		}
+
+		if ( ! class_exists( '\ET_Builder_Module' ) ) {
+			return;
+		}
+
+		new \WooDiviExtended\DiviModules\Apex27Listings();
+		new \WooDiviExtended\DiviModules\Apex27SearchForm();
 	}
 
 	/**
@@ -127,6 +214,14 @@ class FrontendHooks {
 	 * @return void
 	 */
 	public function enqueue_divi_visual_builder_assets() {
+		wp_register_script(
+			'woodivi-extend-divi5-apex27',
+			WOO_DIVI_EXTENDED_URL . 'assets/js/divi5-apex27-modules.js',
+			array( 'lodash', 'divi-vendor-wp-hooks', 'divi-vendor-wp-i18n' ),
+			WOO_DIVI_EXTENDED_VERSION,
+			true
+		);
+
 		if (
 			! function_exists( 'et_builder_d5_enabled' )
 			|| ! function_exists( 'et_core_is_fb_enabled' )
@@ -160,6 +255,34 @@ class FrontendHooks {
 				),
 			)
 		);
+
+		\ET\Builder\VisualBuilder\Assets\PackageBuildManager::register_package_build(
+			array(
+				'name'    => 'woodivi-extend-divi5-apex27',
+				'version' => WOO_DIVI_EXTENDED_VERSION,
+				'script'  => array(
+					'src'                => WOO_DIVI_EXTENDED_URL . 'assets/js/divi5-apex27-modules.js',
+					'deps'               => array(
+						'lodash',
+						'divi-vendor-wp-hooks',
+						'divi-vendor-wp-i18n',
+						'divi-module-library',
+						'divi-module',
+						'react',
+					),
+					'enqueue_top_window' => false,
+					'enqueue_app_window' => true,
+					'args'               => array(
+						'in_footer' => false,
+					),
+				),
+				'style'   => array(
+					'enqueue_top_window' => false,
+					'enqueue_app_window' => false,
+				),
+			)
+		);
+
 	}
 
 	/**
@@ -208,6 +331,46 @@ class FrontendHooks {
 		$module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['class'] = implode( ' ', array_unique( $classes ) );
 
 		return $module_attrs;
+	}
+
+	/**
+	 * Render temporary admin diagnostics for Apex27 registration.
+	 *
+	 * @return void
+	 */
+	public function maybe_render_apex27_registration_debug_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( ! filter_input( INPUT_GET, 'woodivi_apex27_debug', FILTER_DEFAULT ) ) {
+			return;
+		}
+
+		$registry = \WP_Block_Type_Registry::get_instance();
+		$d5_state = 'unavailable';
+
+		if ( function_exists( 'et_builder_d5_enabled' ) ) {
+			$d5_state = et_builder_d5_enabled() ? 'on' : 'off';
+		}
+
+		$messages = array(
+			'Divi 5 enabled: ' . $d5_state,
+			'ModuleRegistration class exists: ' . ( class_exists( '\\ET\\Builder\\Packages\\ModuleLibrary\\ModuleRegistration' ) ? 'yes' : 'no' ),
+			'divi_module_library_register_module function exists: ' . ( function_exists( 'divi_module_library_register_module' ) ? 'yes' : 'no' ),
+			'Block registered (woodivi/apex27-listings): ' . ( $registry->is_registered( 'woodivi/apex27-listings' ) ? 'yes' : 'no' ),
+			'Block registered (woodivi/apex27-search-form): ' . ( $registry->is_registered( 'woodivi/apex27-search-form' ) ? 'yes' : 'no' ),
+			'Registration hooks fired: ' . ( empty( $this->apex27_registration_hooks ) ? 'none' : implode( ', ', array_unique( $this->apex27_registration_hooks ) ) ),
+			'VB Compatibility Script enqueued: ' . ( wp_script_is( 'woodivi-extend-divi5-apex27', 'enqueued' ) ? 'yes' : 'no' ),
+		);
+
+		echo '<div class="notice notice-info"><p><strong>Apex27 Divi Registration Debug</strong></p><ul style="margin:0 0 0 18px;">';
+
+		foreach ( $messages as $message ) {
+			echo '<li>' . esc_html( $message ) . '</li>';
+		}
+
+		echo '</ul></div>';
 	}
 
 	/**

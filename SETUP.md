@@ -30,6 +30,25 @@ The `vendor/` directory is excluded from git via `.gitignore`.
 
 ## Next Steps
 
+### Apex27 Divi 5 Listings Module
+
+1. Open **WooDivi Extend -> Apex27 Settings**.
+2. Set the following values:
+    - **API Base URL**: `https://api.apex27.co.uk`
+    - **API Key**: your key from `https://ragdon.apex27.co.uk/admin/api-keys`
+    - **Listings Endpoint**: `/listings`
+    - **Sales Endpoint**: `/offers`
+    - **API Key Header**: `x-api-key`
+    - **Authorization Scheme**: `None`
+3. In Divi 5 builder, add **Apex27 Listings** module.
+4. Set **Items to Display** to:
+    - `Listings`, `Sales`, or `Listings and Sales` for normal mode
+    - `Custom Endpoint` if you want one module instance to call a specific endpoint
+5. Optionally set **Static Query Params** in query-string format, e.g. `branch=ragdon&department=sales`.
+
+The module merges static query params with search-form query params from the URL.
+For listings output, keep `includeImages=1` in Static Query Params unless you intentionally want text-only cards.
+
 ### Development
 
 1. **Add new features**: Create new classes in `src/` following the same namespace pattern

@@ -121,6 +121,16 @@ class AdminHooks {
 				'default'           => $this->get_default_filterable_portfolio_settings(),
 			)
 		);
+
+		register_setting(
+			'woodivi_extend_apex27',
+			'woodivi_extend_apex27',
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( $this, 'sanitize_apex27_settings' ),
+				'default'           => $this->get_default_apex27_settings(),
+			)
+		);
 	}
 
 	/**
@@ -157,6 +167,63 @@ class AdminHooks {
 	}
 
 	/**
+	 * Get default Apex27 settings.
+	 *
+	 * @return array
+	 */
+	private function get_default_apex27_settings() {
+		return array(
+			'api_key'           => '',
+			'base_url'          => 'https://api.apex27.co.uk',
+			'listings_endpoint' => '/listings',
+			'sales_endpoint'    => '/offers',
+			'api_key_header'    => 'x-api-key',
+			'auth_scheme'       => 'none',
+			'api_key_param'     => '',
+			'timeout'           => 20,
+			'cache_minutes'     => 15,
+		);
+	}
+
+	/**
+	 * Sanitize Apex27 settings.
+	 *
+	 * @param array $settings Raw settings.
+	 *
+	 * @return array
+	 */
+	public function sanitize_apex27_settings( $settings ) {
+		$defaults = $this->get_default_apex27_settings();
+		$settings = is_array( $settings ) ? $settings : array();
+
+		$base_url = isset( $settings['base_url'] ) ? esc_url_raw( trim( $settings['base_url'] ) ) : $defaults['base_url'];
+		$base_url = untrailingslashit( $base_url );
+
+		$listings_endpoint = isset( $settings['listings_endpoint'] ) ? sanitize_text_field( $settings['listings_endpoint'] ) : $defaults['listings_endpoint'];
+		$sales_endpoint    = isset( $settings['sales_endpoint'] ) ? sanitize_text_field( $settings['sales_endpoint'] ) : $defaults['sales_endpoint'];
+		$api_key_header    = isset( $settings['api_key_header'] ) ? sanitize_text_field( $settings['api_key_header'] ) : $defaults['api_key_header'];
+		$auth_scheme       = isset( $settings['auth_scheme'] ) ? sanitize_key( $settings['auth_scheme'] ) : $defaults['auth_scheme'];
+		$api_key_param     = isset( $settings['api_key_param'] ) ? sanitize_key( $settings['api_key_param'] ) : '';
+		$timeout           = max( 5, absint( $settings['timeout'] ?? $defaults['timeout'] ) );
+
+		if ( ! in_array( $auth_scheme, array( 'none', 'bearer', 'token' ), true ) ) {
+			$auth_scheme = $defaults['auth_scheme'];
+		}
+
+		return array(
+			'api_key'           => isset( $settings['api_key'] ) ? sanitize_text_field( $settings['api_key'] ) : '',
+			'base_url'          => $base_url ? $base_url : $defaults['base_url'],
+			'listings_endpoint' => '/' . ltrim( $listings_endpoint, '/' ),
+			'sales_endpoint'    => '/' . ltrim( $sales_endpoint, '/' ),
+			'api_key_header'    => preg_replace( '/[^A-Za-z0-9\-]/', '', $api_key_header ),
+			'auth_scheme'       => $auth_scheme,
+			'api_key_param'     => $api_key_param,
+			'timeout'           => $timeout,
+			'cache_minutes'     => max( 0, absint( $settings['cache_minutes'] ?? $defaults['cache_minutes'] ) ),
+		);
+	}
+
+	/**
 	 * Get admin modules.
 	 *
 	 * Add new modules here, or extend this list with the
@@ -177,6 +244,12 @@ class AdminHooks {
 				'title'       => __( 'Filterable Portfolio Settings', 'woodivi-extend' ),
 				'description' => __( 'Add inline child category checkboxes to Divi filterable portfolio tabs.', 'woodivi-extend' ),
 				'view'        => WOO_DIVI_EXTENDED_PATH . 'views/admin/modules/filterable-portfolio.php',
+			),
+			'apex27-settings' => array(
+				'label'       => __( 'Apex27 Settings', 'woodivi-extend' ),
+				'title'       => __( 'Apex27 Settings', 'woodivi-extend' ),
+				'description' => __( 'Connect Apex27 CRM so Divi modules can display property listings, sales items, and search filters.', 'woodivi-extend' ),
+				'view'        => WOO_DIVI_EXTENDED_PATH . 'views/admin/modules/apex27-settings.php',
 			),
 			'text-slider' => array(
 				'label'       => __( 'Text Slider', 'woodivi-extend' ),

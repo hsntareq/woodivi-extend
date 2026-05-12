@@ -1,10 +1,1 @@
-// Admin JavaScript
-(function ($) {
-	'use strict';
-
-	$(document).ready(function () {
-		// Add your admin scripts here
-		console.log('WooDivi Extend Admin loaded');
-	});
-
-})(jQuery);
+!function(){"use strict";jQuery(document).ready(function(){console.log("WooDivi Extend Admin loaded")})}();
