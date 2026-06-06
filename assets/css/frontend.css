@@ -85,9 +85,9 @@
 
 /* Checked state: fill box and show check */
 .woodivi-portfolio-subfilters__option input:checked + span::before {
-	background: #0b4df4;
-	border-color: rgba(11,77,244,0.18);
-	box-shadow: 0 6px 18px rgba(11,77,244,0.12);
+	background: #c01f2a;
+	border-color: rgba(192,31,42,0.18);
+	box-shadow: 0 6px 18px rgba(192,31,42,0.12);
 }
 .woodivi-portfolio-subfilters__option input:checked + span::after {
 	transform: translateY(-60%) rotate(45deg) scale(1);
@@ -114,18 +114,18 @@
 /* Hover and focus */
 .woodivi-portfolio-subfilters__option:hover span,
 .woodivi-portfolio-subfilters__option input:focus + span {
-	background: #eef2ff;
-	color: #0b4df4;
+	background: #fff2f2;
+	color: #c01f2a;
 	transform: translateY(-1px);
-	box-shadow: 0 4px 12px rgba(11,77,244,0.06);
+	box-shadow: 0 4px 12px rgba(192,31,42,0.06);
 }
 
-/* Active/checked state */
+/* Active/checked state (chip) */
 .woodivi-portfolio-subfilters__option input:checked + span {
-	background: #0b4df4;
+	background: #c01f2a;
 	color: #fff;
-	border-color: rgba(11,77,244,0.18);
-	box-shadow: 0 6px 18px rgba(11,77,244,0.12);
+	border-color: rgba(192,31,42,0.18);
+	box-shadow: 0 6px 18px rgba(192,31,42,0.12);
 }
 
 /* Make chips wrap and scroll nicely on small screens */
@@ -165,6 +165,6 @@
 
 /* Accessible focus ring for keyboard users */
 .woodivi-portfolio-subfilters__option input:focus + span {
-	outline: 3px solid rgba(11,77,244,0.18);
+	outline: 3px solid rgba(192,31,42,0.18);
 	outline-offset: 3px;
 }
