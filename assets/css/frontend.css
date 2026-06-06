@@ -32,14 +32,71 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-/* Show native checkbox next to chip for clarity and accessibility */
+/* Custom checkbox: hide native input visually but keep it accessible, draw custom box in the chip */
+.woodivi-portfolio-subfilters__option {
+	position: relative;
+}
+
 .woodivi-portfolio-subfilters__option input {
-	margin: 0 8px 0 0;
+	/* keep in flow for keyboard focus but visually hidden */
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	transform: translateY(-50%);
 	width: 16px;
 	height: 16px;
-	vertical-align: middle;
+	opacity: 0;
 	cursor: pointer;
-	appearance: auto;
+}
+
+/* Reserve space on the span for the custom checkbox */
+.woodivi-portfolio-subfilters__option span {
+	padding-left: 34px; /* room for the custom box */
+}
+
+/* Draw the custom checkbox box */
+.woodivi-portfolio-subfilters__option span::before {
+	content: '';
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	background: #fff;
+	border: 1px solid rgba(34,34,34,0.12);
+	box-sizing: border-box;
+}
+
+/* Checkmark */
+.woodivi-portfolio-subfilters__option span::after {
+	content: '';
+	position: absolute;
+	left: 12px;
+	top: 50%;
+	transform: translateY(-60%) rotate(45deg) scale(0);
+	width: 6px;
+	height: 10px;
+	border: solid #fff;
+	border-width: 0 2px 2px 0;
+	transition: transform 120ms ease;
+}
+
+/* Checked state: fill box and show check */
+.woodivi-portfolio-subfilters__option input:checked + span::before {
+	background: #0b4df4;
+	border-color: rgba(11,77,244,0.18);
+	box-shadow: 0 6px 18px rgba(11,77,244,0.12);
+}
+.woodivi-portfolio-subfilters__option input:checked + span::after {
+	transform: translateY(-60%) rotate(45deg) scale(1);
+}
+
+/* Hover and focus for the custom box */
+.woodivi-portfolio-subfilters__option:hover span::before,
+.woodivi-portfolio-subfilters__option input:focus + span::before {
+	border-color: rgba(11,77,244,0.28);
 }
 
 /* Chip look for the label text (the appended span) */
