@@ -6,7 +6,6 @@
 		: {};
 
 	function getCategorySlug($filter) {
-		return $filter.data('category-slug') || $filter.attr('data-category-slug') || '';
 		var raw = $filter.data('category-slug') || $filter.attr('data-category-slug') || $filter.data('filter') || $filter.attr('data-filter') || $filter.attr('href') || '';
 		raw = String(raw || '');
 
@@ -14,16 +13,11 @@
 			return '';
 		}
 
-		// Common patterns:
-		//  - ".project_category-slug" (filter selector)
-		//  - "project_category-slug" (class name without dot)
-		//  - "#filter-project_category-slug" (anchor href)
-		//  - ".category-slug" or "category-slug"
 		var patterns = [
-			/project[_-]category[-_]([A-Za-z0-9-_]+)$/,
-			/portfolio[_-]category[-_]([A-Za-z0-9-_]+)$/,
-			/category[-_]([A-Za-z0-9-_]+)$/,
-			/(?:#filter-)?\.?(?:filter-)?([A-Za-z0-9-_]+)$/
+			/project[_-]category[-_]([A-Za-z0-9-_]+)/i,
+			/portfolio[_-]category[-_]([A-Za-z0-9-_]+)/i,
+			/category[-_]([A-Za-z0-9-_]+)/i,
+			/(?:#filter-)?\.?(?:filter-)?([A-Za-z0-9-_]+)/i
 		];
 
 		for (var i = 0; i < patterns.length; i++) {
@@ -59,7 +53,45 @@
 	}
 
 	function itemHasCategory($item, slug) {
-		return $item.hasClass(categoryClass(slug));
+		if (!slug) {
+			return false;
+		}
+
+		var candidates = [
+			'project_category-' + slug,
+			'project-category-' + slug,
+			'portfolio_category-' + slug,
+			'portfolio-category-' + slug,
+			'category-' + slug,
+			slug
+		];
+
+		for (var i = 0; i < candidates.length; i++) {
+			if ($item.hasClass(candidates[i])) {
+				return true;
+			}
+		}
+
+		// Fallback: check data attributes that may contain term slugs
+		var dataCats = $item.data('categories') || $item.data('category') || $item.data('term') || $item.attr('data-categories') || '';
+		if (dataCats) {
+			try {
+				if (Array.isArray(dataCats)) {
+					if (dataCats.indexOf(slug) !== -1) {
+						return true;
+					}
+				} else {
+					var parts = String(dataCats).split(/\s+|,|\|/);
+					if (parts.indexOf(slug) !== -1) {
+						return true;
+					}
+				}
+			} catch (e) {
+				// ignore
+			}
+		}
+
+		return false;
 	}
 
 	function renderSubCategoryFilters($portfolio, parentCategory) {
@@ -165,7 +197,6 @@
 			var $portfolio = $(this);
 
 			if ($portfolio.data('woodiviSubfiltersReady')) {
-				refreshPortfolio($portfolio);
 				return;
 			}
 
