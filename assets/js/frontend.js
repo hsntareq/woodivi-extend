@@ -7,6 +7,39 @@
 
 	function getCategorySlug($filter) {
 		return $filter.data('category-slug') || $filter.attr('data-category-slug') || '';
+		var raw = $filter.data('category-slug') || $filter.attr('data-category-slug') || $filter.data('filter') || $filter.attr('data-filter') || $filter.attr('href') || '';
+		raw = String(raw || '');
+
+		if (!raw) {
+			return '';
+		}
+
+		// Common patterns:
+		//  - ".project_category-slug" (filter selector)
+		//  - "project_category-slug" (class name without dot)
+		//  - "#filter-project_category-slug" (anchor href)
+		//  - ".category-slug" or "category-slug"
+		var patterns = [
+			/project[_-]category[-_]([A-Za-z0-9-_]+)$/,
+			/portfolio[_-]category[-_]([A-Za-z0-9-_]+)$/,
+			/category[-_]([A-Za-z0-9-_]+)$/,
+			/(?:#filter-)?\.?(?:filter-)?([A-Za-z0-9-_]+)$/
+		];
+
+		for (var i = 0; i < patterns.length; i++) {
+			var m = raw.match(patterns[i]);
+			if (m && m[1]) {
+				return m[1];
+			}
+		}
+
+		// Fallback: strip leading punctuation and return remainder if it looks like a slug
+		var fallback = raw.replace(/^\W+/, '');
+		if (/^[A-Za-z0-9-_]+$/.test(fallback)) {
+			return fallback;
+		}
+
+		return '';
 	}
 
 	function getParentBySlug(slug) {
