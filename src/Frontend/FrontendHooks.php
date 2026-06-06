@@ -395,16 +395,42 @@ class FrontendHooks {
 	 * @return array
 	 */
 	private function get_project_category_tree() {
-		if ( ! taxonomy_exists( 'project_category' ) ) {
-			return array();
+		// Try a list of commonly used taxonomy names to maximize compatibility.
+		$possible_taxonomies = array(
+			'project_category',
+			'project_cat',
+			'portfolio_category',
+			'portfolio_cat',
+			'category',
+		);
+
+		$terms = array();
+		$found_taxonomy = null;
+
+		foreach ( $possible_taxonomies as $tax ) {
+			if ( ! taxonomy_exists( $tax ) ) {
+				continue;
+			}
+
+			$maybe = get_terms(
+				array(
+					'taxonomy'   => $tax,
+					'hide_empty' => false,
+				)
+			);
+
+			if ( is_wp_error( $maybe ) || empty( $maybe ) ) {
+				continue;
+			}
+
+			$terms = $maybe;
+			$found_taxonomy = $tax;
+			break;
 		}
 
-		$terms = get_terms(
-			array(
-				'taxonomy'   => 'project_category',
-				'hide_empty' => false,
-			)
-		);
+		if ( empty( $terms ) ) {
+			return array();
+		}
 
 		if ( is_wp_error( $terms ) || empty( $terms ) ) {
 			return array();

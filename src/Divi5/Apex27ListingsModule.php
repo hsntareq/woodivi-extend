@@ -191,19 +191,24 @@ class Apex27ListingsModule {
 	 */
 	private static function get_search_query() {
 		$allowed = array(
-			'apex27_query'     => 'city',
-			'apex27_status'    => 'status',
-			'apex27_type'      => 'propertyType',
-			'apex27_bedrooms'  => 'minBeds',
-			'apex27_min_price' => 'minPrice',
-			'apex27_max_price' => 'maxPrice',
+			// Keep frontend behavior aligned with Divi 4 while preserving common Apex27 aliases.
+			'apex27_query'     => array( 'query', 'city' ),
+			'apex27_status'    => array( 'status' ),
+			'apex27_type'      => array( 'type', 'propertyType' ),
+			'apex27_bedrooms'  => array( 'bedrooms', 'minBeds' ),
+			'apex27_min_price' => array( 'min_price', 'minPrice' ),
+			'apex27_max_price' => array( 'max_price', 'maxPrice' ),
 		);
 
 		$query = array();
 
-		foreach ( $allowed as $request_key => $api_key ) {
+		foreach ( $allowed as $request_key => $api_keys ) {
 			if ( isset( $_GET[ $request_key ] ) && ! is_array( $_GET[ $request_key ] ) ) {
-				$query[ $api_key ] = sanitize_text_field( wp_unslash( $_GET[ $request_key ] ) );
+				$value = sanitize_text_field( wp_unslash( $_GET[ $request_key ] ) );
+
+				foreach ( $api_keys as $api_key ) {
+					$query[ $api_key ] = $value;
+				}
 			}
 		}
 
@@ -359,13 +364,14 @@ class Apex27ListingsModule {
 	}
 
 	/**
-	 * Render a notice.
+	 * Render a frontend notice.
 	 *
-	 * @param string $message Message.
+	 * @param string $message Notice message.
 	 *
 	 * @return string
 	 */
 	private static function render_notice( $message ) {
 		return sprintf( '<div class="woodivi-apex27-notice">%s</div>', esc_html( $message ) );
 	}
+
 }
