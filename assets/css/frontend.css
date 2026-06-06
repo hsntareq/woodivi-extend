@@ -54,6 +54,9 @@
 	padding: 6px 12px;
 	position: relative;
 	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 }
 
 /* Active/checked state: fill the chip with theme red */
@@ -66,7 +69,9 @@
 
 /* Chip look for the label text (the appended span) */
 .woodivi-portfolio-subfilters__option span {
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 	padding: 6px 12px;
 	border-radius: 999px;
 	background: #f3f4f6;
@@ -115,6 +120,26 @@
 }
 .woodivi-portfolio-subfilters__option span::after {
 	content: '';
+}
+.woodivi-portfolio-subfilters__option span::before {
+	content: '';
+	display: inline-flex;
+	width: 18px;
+	height: 18px;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	color: transparent;
+	transition: color 140ms ease, transform 140ms ease, background 140ms ease;
+	border-radius: 50%;
+}
+
+/* Show a check mark inside the chip when selected */
+.woodivi-portfolio-subfilters__option input:checked + span::before {
+	content: '\2713';
+	color: #fff;
+	background: rgba(255,255,255,0.12);
+	transform: scale(1);
 }
 .woodivi-portfolio-subfilters__option span em {
 	font-style: normal;
