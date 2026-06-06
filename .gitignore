@@ -15,3 +15,5 @@ Thumbs.db
 # WordPress
 wp - config - local.php
 *.log
+node_modules
+.github/
