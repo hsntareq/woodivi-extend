@@ -1,1 +1,54 @@
-!function(){"use strict";var o=window.vendor&&window.vendor.wp&&window.vendor.wp.hooks,e=window.vendor&&window.vendor.wp&&window.vendor.wp.i18n,__=e&&e.__?e.__:function(o){return o};o&&o.addFilter&&o.addFilter("divi.moduleLibrary.moduleAttributes.divi.filterable-portfolio","woodivi-extend/filterable-portfolio-subcategory-toggle",function(o){var e=o&&o.portfolio&&o.portfolio.settings&&o.portfolio.settings.advanced;return e?(e.showSubcategories={groupType:"group-item",item:{groupSlug:"contentElements",attrName:"portfolio.advanced.showSubcategories",label:__("Show Sub Categories","woodivi-extend"),description:__("Show inline child category checkboxes under parent category tabs.","woodivi-extend"),category:"configuration",priority:12,render:!0,features:{sticky:!1,responsive:!1,hover:!1,preset:["html"]},defaultAttr:{desktop:{value:"off"}},component:{type:"field",name:"divi/toggle"}}},o):o},20)}();
+/******/ (() => { // webpackBootstrap
+/*!*****************************************************!*\
+  !*** ./assets/src/js/divi5-filterable-portfolio.js ***!
+  \*****************************************************/
+(function () {
+  'use strict';
+
+  var hooks = window.vendor && window.vendor.wp && window.vendor.wp.hooks;
+  var i18n = window.vendor && window.vendor.wp && window.vendor.wp.i18n;
+  var __ = i18n && i18n.__ ? i18n.__ : function (text) {
+    return text;
+  };
+  if (!hooks || !hooks.addFilter) {
+    return;
+  }
+  function addSubcategoryToggle(attributes) {
+    var advancedSettings = attributes && attributes.portfolio && attributes.portfolio.settings && attributes.portfolio.settings.advanced;
+    if (!advancedSettings) {
+      return attributes;
+    }
+    advancedSettings.showSubcategories = {
+      groupType: 'group-item',
+      item: {
+        groupSlug: 'contentElements',
+        attrName: 'portfolio.advanced.showSubcategories',
+        label: __('Show Sub Categories', 'woodivi-extend'),
+        description: __('Show inline child category checkboxes under parent category tabs.', 'woodivi-extend'),
+        category: 'configuration',
+        priority: 12,
+        render: true,
+        features: {
+          sticky: false,
+          responsive: false,
+          hover: false,
+          preset: ['html']
+        },
+        defaultAttr: {
+          desktop: {
+            value: 'off'
+          }
+        },
+        component: {
+          type: 'field',
+          name: 'divi/toggle'
+        }
+      }
+    };
+    return attributes;
+  }
+  hooks.addFilter('divi.moduleLibrary.moduleAttributes.divi.filterable-portfolio', 'woodivi-extend/filterable-portfolio-subcategory-toggle', addSubcategoryToggle, 20);
+})();
+/******/ })()
+;
+//# sourceMappingURL=divi5-filterable-portfolio.js.map
