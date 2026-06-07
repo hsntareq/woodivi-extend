@@ -71,15 +71,16 @@
 /* Chip look for the label text (the appended span) */
 .woodivi-portfolio-subfilters__option span {
 	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 6px 12px;
-	border-radius: 999px;
-	background: #f3f4f6;
-	color: #222;
-	border: 1px solid rgba(34,34,34,0.06);
-	transition: background 180ms ease, color 180ms ease, transform 140ms ease, box-shadow 180ms ease;
-	font-weight: 500;
+    align-items: center;
+    gap: 8px;
+    /* keep left padding so the pseudo-checkbox symbol sits inside the chip */
+    padding: 6px 12px 6px 34px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #222;
+    border: 1px solid rgba(34,34,34,0.06);
+    transition: background 180ms ease, color 180ms ease, transform 140ms ease, box-shadow 180ms ease;
+    font-weight: 500;
 }
 
 /* Hover and focus */
