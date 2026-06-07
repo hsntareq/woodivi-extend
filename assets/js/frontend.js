@@ -1,6 +1,40 @@
 (function ($) {
 	'use strict';
 
+	// Defensive: avoid uncaught NotSupportedError from calling play() on media elements with no sources.
+	// Some WP/core scripts call `.play()` without checking for sources and the returned promise can
+	// reject with NotSupportedError. Monkey-patch play to short-circuit when no source is present
+	// and to swallow harmless rejections to avoid breaking the live UI.
+	(function () {
+		if (typeof HTMLMediaElement === 'undefined') {
+			return;
+		}
+
+		var origPlay = HTMLMediaElement.prototype.play;
+
+		HTMLMediaElement.prototype.play = function () {
+			try {
+				var hasSrc = !!(this.currentSrc || (this.querySelector && this.querySelector('source[src]')));
+				if (!hasSrc) {
+					return Promise.resolve();
+				}
+				var p = origPlay.call(this);
+				if (p && typeof p.catch === 'function') {
+					p.catch(function (err) {
+						// swallow NotSupportedError or other harmless rejections to avoid uncaught promise errors
+						// still log others in debug mode
+						if (window.console && window.DEBUG) {
+							console.warn('media play rejected', err);
+						}
+					});
+				}
+				return p;
+			} catch (e) {
+				return Promise.resolve();
+			}
+		};
+	})();
+
 	var config = window.wooDiviExtended && window.wooDiviExtended.filterablePortfolio
 		? window.wooDiviExtended.filterablePortfolio
 		: {};

@@ -51,7 +51,8 @@
 
 /* Reset span padding since there is no checkbox */
 .woodivi-portfolio-subfilters__option span {
-	padding: 6px 12px;
+	/* Reserve left padding for the pseudo-checkbox which will be positioned inside the chip */
+	padding: 6px 12px 6px 34px;
 	position: relative;
 	z-index: 1;
 	display: inline-flex;
@@ -123,6 +124,11 @@
 }
 .woodivi-portfolio-subfilters__option span::before {
 	content: '';
+	/* position the visual symbol inside the chip to avoid extra layout gap */
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	transform: translateY(-50%);
 	display: inline-flex;
 	width: 18px;
 	height: 18px;
@@ -141,6 +147,16 @@
 /* Square variant: use rounded square outline instead of circle */
 .woodivi-portfolio-subfilters--square .woodivi-portfolio-subfilters__option span::before {
     border-radius: 6px;
+}
+
+/* Compact option to entirely hide the pseudo-checkbox (if you prefer no symbol) */
+.woodivi-portfolio-subfilters--compact .woodivi-portfolio-subfilters__option span::before {
+	display: none;
+}
+
+/* When compact/no-symbol is used, reduce left padding so chips stay tight */
+.woodivi-portfolio-subfilters--compact .woodivi-portfolio-subfilters__option span {
+	padding-left: 12px;
 }
 
 /* Show a check mark inside the chip when selected */
