@@ -6,6 +6,8 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 10px 16px;
+	/* Add a little space before the first chip */
+	padding-left: 12px;
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -111,6 +113,8 @@
 	flex-wrap: wrap;
 	margin: 0;
 	padding: 0;
+	/* small inset so subfilters don't sit flush to the left */
+	padding-left: 12px;
 	border: 0;
 }
 
