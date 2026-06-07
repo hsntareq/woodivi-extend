@@ -103,6 +103,15 @@
 			$portfolio.find('.et_pb_portfolio_filters').first().after($holder);
 		}
 
+		// Apply shape modifier from config: 'circle' (default) or 'square'
+		var shape = (config.shape || 'circle').toString().toLowerCase();
+		// normalize value
+		if (shape !== 'square') {
+			shape = 'circle';
+		}
+		$holder.removeClass('woodivi-portfolio-subfilters--circle woodivi-portfolio-subfilters--square');
+		$holder.addClass('woodivi-portfolio-subfilters--' + shape);
+
 		$holder.empty();
 		$portfolio.removeClass('woodivi-has-subfilters');
 
