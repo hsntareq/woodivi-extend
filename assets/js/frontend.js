@@ -6,7 +6,34 @@
 		: {};
 
 	function getCategorySlug($filter) {
-		return $filter.data('category-slug') || $filter.attr('data-category-slug') || '';
+		var raw = $filter.data('category-slug') || $filter.attr('data-category-slug') || $filter.data('filter') || $filter.attr('data-filter') || $filter.attr('href') || '';
+		raw = String(raw || '');
+
+		if (!raw) {
+			return '';
+		}
+
+		var patterns = [
+			/project[_-]category[-_]([A-Za-z0-9-_]+)/i,
+			/portfolio[_-]category[-_]([A-Za-z0-9-_]+)/i,
+			/category[-_]([A-Za-z0-9-_]+)/i,
+			/(?:#filter-)?\.?(?:filter-)?([A-Za-z0-9-_]+)/i
+		];
+
+		for (var i = 0; i < patterns.length; i++) {
+			var m = raw.match(patterns[i]);
+			if (m && m[1]) {
+				return m[1];
+			}
+		}
+
+		// Fallback: strip leading punctuation and return remainder if it looks like a slug
+		var fallback = raw.replace(/^\W+/, '');
+		if (/^[A-Za-z0-9-_]+$/.test(fallback)) {
+			return fallback;
+		}
+
+		return '';
 	}
 
 	function getParentBySlug(slug) {
@@ -26,7 +53,45 @@
 	}
 
 	function itemHasCategory($item, slug) {
-		return $item.hasClass(categoryClass(slug));
+		if (!slug) {
+			return false;
+		}
+
+		var candidates = [
+			'project_category-' + slug,
+			'project-category-' + slug,
+			'portfolio_category-' + slug,
+			'portfolio-category-' + slug,
+			'category-' + slug,
+			slug
+		];
+
+		for (var i = 0; i < candidates.length; i++) {
+			if ($item.hasClass(candidates[i])) {
+				return true;
+			}
+		}
+
+		// Fallback: check data attributes that may contain term slugs
+		var dataCats = $item.data('categories') || $item.data('category') || $item.data('term') || $item.attr('data-categories') || '';
+		if (dataCats) {
+			try {
+				if (Array.isArray(dataCats)) {
+					if (dataCats.indexOf(slug) !== -1) {
+						return true;
+					}
+				} else {
+					var parts = String(dataCats).split(/\s+|,|\|/);
+					if (parts.indexOf(slug) !== -1) {
+						return true;
+					}
+				}
+			} catch (e) {
+				// ignore
+			}
+		}
+
+		return false;
 	}
 
 	function renderSubCategoryFilters($portfolio, parentCategory) {
@@ -37,6 +102,15 @@
 			$holder = $('<div class="woodivi-portfolio-subfilters" />');
 			$portfolio.find('.et_pb_portfolio_filters').first().after($holder);
 		}
+
+		// Apply shape modifier from config: 'circle' (default) or 'square'
+		var shape = (config.shape || 'circle').toString().toLowerCase();
+		// normalize value
+		if (shape !== 'square') {
+			shape = 'circle';
+		}
+		$holder.removeClass('woodivi-portfolio-subfilters--circle woodivi-portfolio-subfilters--square');
+		$holder.addClass('woodivi-portfolio-subfilters--' + shape);
 
 		$holder.empty();
 		$portfolio.removeClass('woodivi-has-subfilters');
@@ -132,7 +206,6 @@
 			var $portfolio = $(this);
 
 			if ($portfolio.data('woodiviSubfiltersReady')) {
-				refreshPortfolio($portfolio);
 				return;
 			}
 
