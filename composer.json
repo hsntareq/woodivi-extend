@@ -11,8 +11,7 @@
   ],
   "require": {
     "php": ">=7.4"
-  },
-  
+  },yes
   "autoload": {
     "psr-4": {
       "WooDiviExtended\\": "src/"
