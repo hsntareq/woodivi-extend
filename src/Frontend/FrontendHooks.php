@@ -88,16 +88,29 @@ class FrontendHooks {
 	public function enqueue_frontend_assets() {
 		$filterable_portfolio_settings = $this->get_filterable_portfolio_settings();
 
+		// Prefer minified assets when present (production build)
+		$css_file = WOO_DIVI_EXTENDED_PATH . 'assets/css/frontend.min.css';
+		$css_url = WOO_DIVI_EXTENDED_URL . 'assets/css/frontend.css';
+		if ( file_exists( $css_file ) ) {
+			$css_url = WOO_DIVI_EXTENDED_URL . 'assets/css/frontend.min.css';
+		}
+
+		$js_file = WOO_DIVI_EXTENDED_PATH . 'assets/js/frontend.min.js';
+		$js_url = WOO_DIVI_EXTENDED_URL . 'assets/js/frontend.js';
+		if ( file_exists( $js_file ) ) {
+			$js_url = WOO_DIVI_EXTENDED_URL . 'assets/js/frontend.min.js';
+		}
+
 		wp_enqueue_style(
 			'woodivi-extend-frontend',
-			WOO_DIVI_EXTENDED_URL . 'assets/css/frontend.css',
+			$css_url,
 			array(),
 			WOO_DIVI_EXTENDED_VERSION
 		);
 
 		wp_enqueue_script(
 			'woodivi-extend-frontend',
-			WOO_DIVI_EXTENDED_URL . 'assets/js/frontend.js',
+			$js_url,
 			array( 'jquery' ),
 			WOO_DIVI_EXTENDED_VERSION,
 			true

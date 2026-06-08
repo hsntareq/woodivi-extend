@@ -26,4 +26,11 @@
       "dealerdirect/phpcodesniffer-composer-installer": true
     }
   }
+
+  ,
+  "scripts": {
+    "build-assets": "php bin/build-assets.php",
+    "cs": "phpcs -p --standard=phpcs.xml",
+    "cs-fix": "phpcbf --standard=phpcs.xml"
+  }
 }
