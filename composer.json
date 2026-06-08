@@ -12,10 +12,7 @@
   "require": {
     "php": ">=7.4"
   },
-  "require-dev": {
-    "squizlabs/php_codesniffer": "^3.7",
-    "wp-coding-standards/wpcs": "^2.3"
-  },
+  
   "autoload": {
     "psr-4": {
       "WooDiviExtended\\": "src/"
@@ -25,12 +22,8 @@
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
     }
-  }
-
-  ,
+  },
   "scripts": {
-    "build-assets": "php bin/build-assets.php",
-    "cs": "phpcs -p --standard=phpcs.xml",
-    "cs-fix": "phpcbf --standard=phpcs.xml"
+    "build-assets": "php bin/build-assets.php"
   }
 }
