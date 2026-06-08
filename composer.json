@@ -21,8 +21,5 @@
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
     }
-  },
-  "scripts": {
-    "build-assets": "php bin/build-assets.php"
   }
 }
