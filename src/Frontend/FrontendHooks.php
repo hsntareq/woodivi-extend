@@ -210,6 +210,9 @@ class FrontendHooks {
 
 		$show_subcategories = $module_attrs['portfolio']['advanced']['showSubcategories']['desktop']['value'] ?? 'off';
 
+		// Module-level option to hide child categories from the Included Categories list.
+		$hide_child = $module_attrs['portfolio']['content']['hideChildCategories']['desktop']['value'] ?? 'off';
+
 		if ( 'on' !== $show_subcategories ) {
 			return $module_attrs;
 		}
@@ -217,6 +220,11 @@ class FrontendHooks {
 		$existing_class = $module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['class'] ?? '';
 		$classes        = array_filter( preg_split( '/\s+/', $existing_class ) );
 		$classes[]      = 'woodivi-filterable-portfolio-subcategories';
+
+		if ( 'on' === $hide_child ) {
+			$classes[] = 'woodivi-hide-child-categories';
+			$module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['data-hide-child-categories'] = '1';
+		}
 
 		$module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['class'] = implode( ' ', array_unique( $classes ) );
 
