@@ -78,6 +78,70 @@ class FrontendHooks {
 			10,
 			2
 		);
+
+		// Modify module attributes metadata so includeCategories lists parents and
+		// provide a separate subCategories field for child terms.
+		$this->loader->add_filter(
+			'divi_module_library_register_module_attrs',
+			$this,
+			'filter_module_attrs_for_subcategories',
+			15,
+			2
+		);
+	}
+
+	/**
+	 * Filter module attributes to split parent and child categories into separate fields.
+	 *
+	 * @param array $module_attrs Module attributes metadata.
+	 * @param array $filter_args  Filter context (contains module name).
+	 *
+	 * @return array
+	 */
+	public function filter_module_attrs_for_subcategories( $module_attrs, $filter_args ) {
+		$module_name = isset( $filter_args['name'] ) ? $filter_args['name'] : '';
+
+		if ( 'divi/filterable-portfolio' !== $module_name ) {
+			return $module_attrs;
+		}
+
+		if ( empty( $module_attrs['portfolio']['content']['includedCategories']['item']['component']['props']['options'] ) ) {
+			return $module_attrs;
+		}
+
+		$options = $module_attrs['portfolio']['content']['includedCategories']['item']['component']['props']['options'];
+
+		$parents  = array();
+		$children = array();
+
+		foreach ( $options as $opt ) {
+			if ( isset( $opt['parent'] ) ) {
+				if ( (int) $opt['parent'] === 0 ) {
+					$parents[] = $opt;
+				} else {
+					$children[] = $opt;
+				}
+			} else {
+				// If no parent info, treat as parent to be safe.
+				$parents[] = $opt;
+			}
+		}
+
+		// Replace includedCategories options with parents only.
+		$module_attrs['portfolio']['content']['includedCategories']['item']['component']['props']['options'] = array_values( $parents );
+
+		// Add a new subCategories field when child items exist.
+		if ( ! empty( $children ) ) {
+			$subField = $module_attrs['portfolio']['content']['includedCategories'];
+			$subField['item']['attrName'] = 'portfolio.content.subCategories';
+			$subField['item']['label'] = __( 'Sub Categories', 'woodivi-extend' );
+			$subField['item']['description'] = __( 'Select which sub-categories to include.', 'woodivi-extend' );
+			$subField['item']['component']['props']['options'] = array_values( $children );
+
+			$module_attrs['portfolio']['content']['subCategories'] = $subField;
+		}
+
+		return $module_attrs;
 	}
 
 	/**
