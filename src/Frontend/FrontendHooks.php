@@ -105,40 +105,75 @@ class FrontendHooks {
 			return $module_attrs;
 		}
 
-		if ( empty( $module_attrs['portfolio']['content']['includedCategories']['item']['component']['props']['options'] ) ) {
-			return $module_attrs;
-		}
+		// Support multiple potential locations where Divi may place the includedCategories
+		$locations = array(
+			array( 'portfolio', 'content', 'includedCategories' ),
+			array( 'portfolio', 'innerContent', 'includedCategories' ),
+			array( 'portfolio', 'settings', 'content', 'includedCategories' ),
+		);
 
-		$options = $module_attrs['portfolio']['content']['includedCategories']['item']['component']['props']['options'];
-
-		$parents  = array();
-		$children = array();
-
-		foreach ( $options as $opt ) {
-			if ( isset( $opt['parent'] ) ) {
-				if ( (int) $opt['parent'] === 0 ) {
-					$parents[] = $opt;
-				} else {
-					$children[] = $opt;
+		foreach ( $locations as $loc ) {
+			$node = $module_attrs;
+			$exists = true;
+			foreach ( $loc as $key ) {
+				if ( ! isset( $node[ $key ] ) ) {
+					$exists = false;
+					break;
 				}
-			} else {
-				// If no parent info, treat as parent to be safe.
-				$parents[] = $opt;
+				$node = $node[ $key ];
 			}
-		}
 
-		// Replace includedCategories options with parents only.
-		$module_attrs['portfolio']['content']['includedCategories']['item']['component']['props']['options'] = array_values( $parents );
+			if ( ! $exists ) {
+				continue;
+			}
 
-		// Add a new subCategories field when child items exist.
-		if ( ! empty( $children ) ) {
-			$subField = $module_attrs['portfolio']['content']['includedCategories'];
-			$subField['item']['attrName'] = 'portfolio.content.subCategories';
-			$subField['item']['label'] = __( 'Sub Categories', 'woodivi-extend' );
-			$subField['item']['description'] = __( 'Select which sub-categories to include.', 'woodivi-extend' );
-			$subField['item']['component']['props']['options'] = array_values( $children );
+			$options = $node['item']['component']['props']['options'] ?? null;
+			if ( empty( $options ) || ! is_array( $options ) ) {
+				continue;
+			}
 
-			$module_attrs['portfolio']['content']['subCategories'] = $subField;
+			$parents = array();
+			$children = array();
+
+			foreach ( $options as $opt ) {
+				if ( isset( $opt['parent'] ) ) {
+					if ( (int) $opt['parent'] === 0 ) {
+						$parents[] = $opt;
+					} else {
+						$children[] = $opt;
+					}
+				} else {
+					$parents[] = $opt;
+				}
+			}
+
+			// Set parents back into module_attrs at the same location.
+			$ref = &$module_attrs;
+			while ( count( $loc ) > 1 ) {
+				$key = array_shift( $loc );
+				$ref = &$ref[ $key ];
+			}
+			$last = array_shift( $loc );
+			$ref[ $last ]['item']['component']['props']['options'] = array_values( $parents );
+
+			// If children exist, add subCategories next to the same parent location.
+			if ( ! empty( $children ) ) {
+				$subField = $ref[ $last ];
+				$subField['item']['attrName'] = str_replace( 'includedCategories', 'subCategories', $subField['item']['attrName'] ?? 'portfolio.content.subCategories' );
+				$subField['item']['label'] = __( 'Sub Categories', 'woodivi-extend' );
+				$subField['item']['description'] = __( 'Select which sub-categories to include.', 'woodivi-extend' );
+				$subField['item']['component']['props']['options'] = array_values( $children );
+
+				// Place subCategories under the same containing array (e.g., portfolio.content.subCategories)
+				$container = &$module_attrs['portfolio'];
+				if ( isset( $container['content'] ) ) {
+					$container['content']['subCategories'] = $subField;
+				} elseif ( isset( $container['innerContent'] ) ) {
+					$container['innerContent']['subCategories'] = $subField;
+				} elseif ( isset( $container['settings']['content'] ) ) {
+					$container['settings']['content']['subCategories'] = $subField;
+				}
+			}
 		}
 
 		return $module_attrs;
