@@ -289,6 +289,13 @@ class FrontendHooks {
 			),
 		);
 
+		// Default for hiding child categories in the main Included Categories control.
+		$default_attrs['portfolio']['content']['hideChildCategories'] = array(
+			'desktop' => array(
+				'value' => 'off',
+			),
+		);
+
 		return $default_attrs;
 	}
 
