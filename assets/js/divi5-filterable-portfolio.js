@@ -21,6 +21,37 @@
 			return attributes;
 		}
 
+		advancedSettings.showSubcategories = {
+			groupType: 'group-item',
+			item: {
+				groupSlug: 'contentElements',
+				attrName: 'portfolio.advanced.showSubcategories',
+				label: __('Show Sub Categories', 'woodivi-extend'),
+				description: __('Show inline child category checkboxes under parent category tabs.', 'woodivi-extend'),
+				category: 'configuration',
+				priority: 12,
+				render: true,
+				features: {
+					sticky: false,
+					responsive: false,
+					hover: false,
+					preset: ['html']
+				},
+				defaultAttr: {
+					desktop: {
+						value: 'off'
+					}
+				},
+				component: {
+					type: 'field',
+					name: 'divi/toggle'
+				}
+			}
+		};
+
+		return attributes;
+	}
+
 	function addHideChildCategoriesToggle(attributes) {
 		var contentSettings = attributes &&
 			attributes.portfolio &&
@@ -74,37 +105,6 @@
 		} catch (e) {
 			// swallow errors — non-critical
 		}
-
-		return attributes;
-	}
-
-		advancedSettings.showSubcategories = {
-			groupType: 'group-item',
-			item: {
-				groupSlug: 'contentElements',
-				attrName: 'portfolio.advanced.showSubcategories',
-				label: __('Show Sub Categories', 'woodivi-extend'),
-				description: __('Show inline child category checkboxes under parent category tabs.', 'woodivi-extend'),
-				category: 'configuration',
-				priority: 12,
-				render: true,
-				features: {
-					sticky: false,
-					responsive: false,
-					hover: false,
-					preset: ['html']
-				},
-				defaultAttr: {
-					desktop: {
-						value: 'off'
-					}
-				},
-				component: {
-					type: 'field',
-					name: 'divi/toggle'
-				}
-			}
-		};
 
 		return attributes;
 	}

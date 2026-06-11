@@ -3,7 +3,7 @@
  * Plugin Name: WooDivi Extend
  * Plugin URI: https://example.com/woodivi-extend
  * Description: Extended features for WooCommerce with Divi integration
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Hasan Tareq
  * Author Email: hsntareq@gmail.com
  * Author URI: https://github.com/hsntareq
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'WOO_DIVI_EXTENDED_VERSION', '1.0.0' );
+define( 'WOO_DIVI_EXTENDED_VERSION', '1.0.1' );
 define( 'WOO_DIVI_EXTENDED_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOO_DIVI_EXTENDED_URL', plugin_dir_url( __FILE__ ) );
 define( 'WOO_DIVI_EXTENDED_BASENAME', plugin_basename( __FILE__ ) );
