@@ -45,6 +45,14 @@ class FrontendHooks {
 			'enqueue_frontend_assets'
 		);
 
+		// Remove Divi's dequeue action for block css to prevent "Missing Dependencies" on wp-block-library
+		$this->loader->add_action(
+			'wp_enqueue_scripts',
+			$this,
+			'prevent_divi_dequeue_block_css',
+			99
+		);
+
 		if ( ! is_admin() ) {
 			$this->loader->add_filter(
 				'the_content',
@@ -202,6 +210,15 @@ class FrontendHooks {
 		}
 
 		return $module_attrs;
+	}
+
+	/**
+	 * Remove Divi's block CSS dequeue action to prevent missing dependency warnings.
+	 *
+	 * @return void
+	 */
+	public function prevent_divi_dequeue_block_css() {
+		remove_action( 'wp_enqueue_scripts', 'et_dequeue_block_css', 100 );
 	}
 
 	/**
