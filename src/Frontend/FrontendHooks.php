@@ -79,6 +79,31 @@ class FrontendHooks {
 			2
 		);
 
+		// Divi 5 accordion filters.
+		$this->loader->add_filter(
+			'divi_module_library_register_module_attrs',
+			$this,
+			'filter_accordion_attrs',
+			10,
+			2
+		);
+
+		$this->loader->add_filter(
+			'divi_module_library_register_module_attrs',
+			$this,
+			'add_accordion_render_attrs',
+			11,
+			2
+		);
+
+		$this->loader->add_filter(
+			'divi_module_library_module_default_attributes_divi/accordion',
+			$this,
+			'add_accordion_default_attrs',
+			10,
+			2
+		);
+
 		// Modify module attributes metadata so includeCategories lists parents and
 		// provide a separate subCategories field for child terms.
 		$this->loader->add_filter(
@@ -272,6 +297,30 @@ class FrontendHooks {
 				),
 			)
 		);
+
+		\ET\Builder\VisualBuilder\Assets\PackageBuildManager::register_package_build(
+			array(
+				'name'    => 'woodivi-extend-divi5-accordion-hover',
+				'version' => WOO_DIVI_EXTENDED_VERSION,
+				'script'  => array(
+					'src'                => WOO_DIVI_EXTENDED_URL . 'assets/js/divi5-accordion-hover.js',
+					'deps'               => array(
+						'lodash',
+						'divi-vendor-wp-hooks',
+						'divi-vendor-wp-i18n',
+					),
+					'enqueue_top_window' => true,
+					'enqueue_app_window' => true,
+					'args'               => array(
+						'in_footer' => false,
+					),
+				),
+				'style'   => array(
+					'enqueue_top_window' => false,
+					'enqueue_app_window' => false,
+				),
+			)
+		);
 	}
 
 	/**
@@ -401,6 +450,111 @@ class FrontendHooks {
 		}
 
 		return array_values( $parents );
+	}
+
+	/**
+	 * Filter accordion module attributes to add the toggleTrigger setting.
+	 *
+	 * @param array $module_attrs Module attributes metadata.
+	 * @param array $filter_args  Filter context (contains module name).
+	 *
+	 * @return array
+	 */
+	public function filter_accordion_attrs( $module_attrs, $filter_args ) {
+		$module_name = isset( $filter_args['name'] ) ? $filter_args['name'] : '';
+
+		if ( 'divi/accordion' !== $module_name ) {
+			return $module_attrs;
+		}
+
+		if ( isset( $module_attrs['module']['settings']['advanced'] ) ) {
+			$module_attrs['module']['settings']['advanced']['toggleTrigger'] = array(
+				'groupType' => 'group-item',
+				'item'      => array(
+					'groupSlug'   => 'contentElements',
+					'attrName'    => 'module.advanced.toggleTrigger',
+					'label'       => __( 'Toggle Trigger', 'woodivi-extend' ),
+					'description' => __( 'Choose whether to toggle accordion items by click or mouseover.', 'woodivi-extend' ),
+					'category'    => 'configuration',
+					'priority'    => 10,
+					'render'      => true,
+					'features'    => array(
+						'sticky'     => false,
+						'responsive' => false,
+						'hover'      => false,
+						'preset'     => array( 'html' ),
+					),
+					'defaultAttr' => array(
+						'desktop' => array(
+							'value' => 'click',
+						),
+					),
+					'component'   => array(
+						'type' => 'field',
+						'name' => 'divi/select',
+						'props' => array(
+							'options' => array(
+								'click'     => array(
+									'label' => __( 'Click', 'woodivi-extend' ),
+								),
+								'mouseover' => array(
+									'label' => __( 'Mouseover', 'woodivi-extend' ),
+								),
+							),
+						),
+					),
+				),
+			);
+		}
+
+		return $module_attrs;
+	}
+
+	/**
+	 * Add custom render attributes to accordion module.
+	 *
+	 * @param array $module_attrs Module render attributes.
+	 * @param array $filter_args  Filter context.
+	 *
+	 * @return array
+	 */
+	public function add_accordion_render_attrs( $module_attrs, $filter_args ) {
+		$module_name = isset( $filter_args['name'] ) ? $filter_args['name'] : '';
+
+		if ( 'divi/accordion' !== $module_name ) {
+			return $module_attrs;
+		}
+
+		$toggle_trigger = $module_attrs['module']['advanced']['toggleTrigger']['desktop']['value'] ?? 'click';
+
+		if ( 'mouseover' === $toggle_trigger ) {
+			$existing_class = $module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['class'] ?? '';
+			$classes        = array_filter( preg_split( '/\s+/', $existing_class ) );
+			$classes[]      = 'woodivi-accordion-mouseover';
+
+			$module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['class'] = implode( ' ', array_unique( $classes ) );
+			$module_attrs['module']['advanced']['htmlAttributes']['desktop']['value']['data-toggle-trigger'] = 'mouseover';
+		}
+
+		return $module_attrs;
+	}
+
+	/**
+	 * Add default accordion attributes.
+	 *
+	 * @param array $default_attrs Default attributes.
+	 * @param array $metadata      Module metadata.
+	 *
+	 * @return array
+	 */
+	public function add_accordion_default_attrs( $default_attrs, $metadata ) {
+		$default_attrs['module']['advanced']['toggleTrigger'] = array(
+			'desktop' => array(
+				'value' => 'click',
+			),
+		);
+
+		return $default_attrs;
 	}
 
 	/**

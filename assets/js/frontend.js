@@ -258,8 +258,36 @@
 		});
 	}
 
+	function initAccordionMouseover() {
+		$('body').on('mouseenter', '.et_pb_accordion.woodivi-accordion-mouseover .et_pb_accordion_item', function () {
+			var $item = $(this);
+
+			// Guard: do not trigger in Visual Builder
+			if ($item.data('id') || $item.closest('.et_pb_accordion').data('id')) {
+				return;
+			}
+
+			// If already open or currently toggling, do nothing
+			if ($item.hasClass('et_pb_toggle_open') || $item.closest('.et_pb_accordion').hasClass('et_pb_accordion_toggling')) {
+				return;
+			}
+
+			// Call the Divi core function to expand the accordion item
+			if (typeof window.et_pb_accordion_item_expand === 'function') {
+				window.et_pb_accordion_item_expand($item);
+			} else {
+				// Fallback if the core function is not available
+				var $title = $item.find('.et_pb_toggle_title').first();
+				if ($title.length) {
+					$title.trigger('click');
+				}
+			}
+		});
+	}
+
 	$(document).ready(function () {
 		initFilterablePortfolioSubcategories();
+		initAccordionMouseover();
 
 		if ('MutationObserver' in window) {
 			var observer = new MutationObserver(function () {
